@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Voice Chat Bot</title>
+    <title>AI Interview Assistant</title>
     <script src="https://js.puter.com/v2/"></script>
     <style>
         :root {
             --bg-color: #121212;
             --card-bg: #1e1e1e;
             --text-color: #e0e0e0;
-            --accent-color: #7289da;
-            --button-color: #5865f2;
-            --button-hover: #4752c4;
-            --highlight-color: #ffd700;
+            --accent-color: #6c5ce7;
+            --button-color: #6c5ce7;
+            --button-hover: #5649c0;
+            --highlight-color: #fd79a8;
+            --gradient-start: #6c5ce7;
+            --gradient-end: #7d5fff;
         }
         
         * {
@@ -33,16 +35,19 @@
         }
         
         header {
-            padding: 1rem;
-            background-color: var(--card-bg);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            padding: 1.5rem 1rem;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             text-align: center;
             z-index: 10;
+            border-radius: 0 0 20px 20px;
         }
         
         h1 {
-            font-size: 1.5rem;
-            color: var(--accent-color);
+            font-size: 1.6rem;
+            color: white;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
         
         main {
@@ -51,6 +56,7 @@
             flex-direction: column;
             overflow: hidden;
             padding: 1rem;
+            position: relative;
         }
         
         #chat-container {
@@ -58,42 +64,52 @@
             overflow-y: auto;
             margin-bottom: 1rem;
             padding-right: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
         }
         
         .message {
-            margin-bottom: 1rem;
-            padding: 0.8rem;
-            border-radius: 0.8rem;
-            max-width: 85%;
+            padding: 1rem;
+            border-radius: 1rem;
+            max-width: 90%;
             word-wrap: break-word;
-            line-height: 1.4;
+            line-height: 1.5;
+            animation: fade-in 0.3s ease-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .user-message {
-            background-color: #2a2d33;
+            background-color: #2c3e50;
             align-self: flex-end;
             margin-left: auto;
+            border-bottom-right-radius: 0.5rem;
         }
         
         .bot-message {
             background-color: var(--card-bg);
             align-self: flex-start;
-            border-left: 3px solid var(--accent-color);
+            border-left: 4px solid var(--accent-color);
+            border-bottom-left-radius: 0.5rem;
         }
         
         .system-message {
-            font-size: 0.8rem;
-            color: #888;
+            font-size: 0.85rem;
+            color: #aaa;
             text-align: center;
             margin: 0.5rem auto;
-            padding: 0.3rem 1rem;
+            padding: 0.5rem 1rem;
             background-color: rgba(0, 0, 0, 0.2);
             border-radius: 1rem;
-            max-width: 80%;
+            max-width: 90%;
         }
         
         .highlight {
-            background-color: rgba(255, 215, 0, 0.2);
             color: var(--highlight-color);
             font-weight: bold;
             padding: 0 2px;
@@ -111,17 +127,19 @@
         .controls {
             display: flex;
             justify-content: center;
-            padding: 1rem;
-            background-color: var(--card-bg);
-            border-radius: 1rem 1rem 0 0;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+            padding: 1.2rem;
+            background-color: rgba(30, 30, 30, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 1.5rem 1.5rem 0 0;
+            box-shadow: 0 -2px 15px rgba(0, 0, 0, 0.4);
+            z-index: 5;
         }
         
         #mic-button {
-            width: 6rem;
-            height: 4rem;
+            width: 8rem;
+            height: 3.5rem;
             border-radius: 2rem;
-            background-color: var(--button-color);
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
             color: white;
             border: none;
             cursor: pointer;
@@ -132,11 +150,12 @@
             transition: all 0.3s ease;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
             font-weight: bold;
+            font-size: 1rem;
         }
         
         #mic-button:hover {
-            background-color: var(--button-hover);
             transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
         }
         
         #mic-button:active {
@@ -144,12 +163,8 @@
         }
         
         #mic-button.recording {
-            background-color: #e74c3c;
+            background: linear-gradient(135deg, #ff6b6b, #e74c3c);
             animation: pulse 1.5s infinite;
-        }
-        
-        #button-text {
-            font-size: 1rem;
         }
         
         @keyframes pulse {
@@ -164,22 +179,77 @@
             }
         }
         
+        #button-text {
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+        }
+        
         .mic-icon {
-            width: 1.5rem;
-            height: 1.5rem;
+            width: 1.2rem;
+            height: 1.2rem;
             fill: currentColor;
         }
         
         .status {
             text-align: center;
             margin-top: 0.5rem;
-            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
             color: #aaa;
+            position: absolute;
+            bottom: 5.5rem;
+            left: 0;
+            right: 0;
+        }
+        
+        .model-badge {
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            background: rgba(108, 92, 231, 0.2);
+            color: #a29bfe;
+            padding: 0.4rem 0.8rem;
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            backdrop-filter: blur(5px);
+        }
+        
+        /* Typing indicator */
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin: 0.5rem 0;
+        }
+        
+        .typing-indicator span {
+            width: 6px;
+            height: 6px;
+            background-color: #a29bfe;
+            border-radius: 50%;
+            animation: bounce 1.5s infinite;
+        }
+        
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-4px);
+            }
         }
         
         /* Scrollbar styling */
         ::-webkit-scrollbar {
-            width: 6px;
+            width: 4px;
         }
         
         ::-webkit-scrollbar-track {
@@ -187,19 +257,22 @@
         }
         
         ::-webkit-scrollbar-thumb {
-            background: var(--accent-color);
-            border-radius: 3px;
+            background: var(--gradient-start);
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>AI Voice Assistant</h1>
+        <h1>AI Interview Assistant</h1>
     </header>
     
     <main>
+        <div class="model-badge">Using GPT-4o</div>
         <div id="chat-container"></div>
     </main>
+    
+    <div class="status" id="status-text">Tap Start to begin</div>
     
     <div class="controls">
         <button id="mic-button">
@@ -210,12 +283,12 @@
             </svg>
         </button>
     </div>
-    <div class="status" id="status-text">Tap the mic to start</div>
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // DOM elements
             const micButton = document.getElementById('mic-button');
+            const buttonText = document.getElementById('button-text');
             const chatContainer = document.getElementById('chat-container');
             const statusText = document.getElementById('status-text');
             
@@ -224,6 +297,9 @@
             let isRecording = false;
             let transcript = '';
             let currentTranscriptElement = null;
+            
+            // Welcome message
+            addMessage("Welcome to AI Interview Assistant. Ask a question as if you're being interviewed, and I'll help you craft a professional response.", "bot");
             
             // Check for Speech Recognition support
             if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -270,10 +346,10 @@
             micButton.addEventListener('click', () => {
                 if (!isRecording) {
                     startRecording();
-                    document.getElementById('button-text').textContent = 'Stop';
+                    buttonText.textContent = 'Stop';
                 } else {
                     stopRecording();
-                    document.getElementById('button-text').textContent = 'Start';
+                    buttonText.textContent = 'Start';
                     if (transcript.trim()) {
                         sendToAI(transcript.trim());
                     }
@@ -341,61 +417,82 @@
                 }
             }
             
+            // Add a message to the chat
+            function addMessage(text, type) {
+                const messageElement = document.createElement('div');
+                messageElement.className = `message ${type}-message`;
+                
+                if (type === 'bot') {
+                    // Process text to highlight important parts for bot messages
+                    const highlightedText = processHighlights(text);
+                    messageElement.innerHTML = highlightedText;
+                } else {
+                    messageElement.textContent = text;
+                }
+                
+                chatContainer.appendChild(messageElement);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                return messageElement;
+            }
+            
+            // Add a system message
+            function addSystemMessage(text) {
+                const messageElement = document.createElement('div');
+                messageElement.className = 'system-message';
+                messageElement.innerHTML = text;
+                chatContainer.appendChild(messageElement);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+            
+            // Show typing indicator
+            function showTypingIndicator() {
+                const indicator = document.createElement('div');
+                indicator.className = 'typing-indicator';
+                indicator.innerHTML = '<span></span><span></span><span></span>';
+                chatContainer.appendChild(indicator);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                return indicator;
+            }
+            
             // Send transcript to AI and get response
             async function sendToAI(text) {
                 statusText.textContent = 'Getting AI response...';
                 
+                // Show model being used
+                addSystemMessage(`Using AI model: GPT-4o`);
+                
+                // Show typing indicator
+                const typingIndicator = showTypingIndicator();
+                
                 try {
-                    // Model choice - using GPT-4o as default
-                    const model = "gpt-4o";
-                    
-                    // Show model being used
-                    const modelInfoElement = document.createElement('div');
-                    modelInfoElement.className = 'message system-message';
-                    modelInfoElement.innerHTML = `<em>Using AI model: ${model}</em>`;
-                    chatContainer.appendChild(modelInfoElement);
+                    // Use o1-mini model which should work more reliably
+                    const model = "o1-mini";
                     
                     // Modify the prompt to get interview-style responses
                     const interviewPrompt = `The following is a question from an interviewer. Please provide a professional, 
                     concise answer as if you're in a job interview. Highlight KEY POINTS in your response: ${text}`;
                     
-                    // Use Puter.js for AI response with streaming
+                    // Use non-streaming version for reliability
                     const response = await puter.ai.chat(interviewPrompt, {
-                        model: model,
-                        stream: true
+                        model: model
                     });
                     
-                    // Create response element
-                    const responseElement = document.createElement('div');
-                    responseElement.className = 'message bot-message';
-                    chatContainer.appendChild(responseElement);
+                    // Remove typing indicator
+                    typingIndicator.remove();
                     
-                    // Stream the response
-                    let fullResponse = '';
-                    for await (const part of response) {
-                        if (part?.text) {
-                            fullResponse += part.text;
-                            
-                            // Process text to highlight important parts
-                            const highlightedText = processHighlights(fullResponse);
-                            responseElement.innerHTML = highlightedText;
-                            
-                            // Scroll to bottom
-                            chatContainer.scrollTop = chatContainer.scrollHeight;
-                        }
-                    }
+                    // Display the response
+                    addMessage(response, 'bot');
                     
                     statusText.textContent = 'Tap Start to begin a new question';
                 } catch (error) {
                     console.error('Error getting AI response:', error);
-                    statusText.textContent = 'Error getting response. Try again.';
+                    
+                    // Remove typing indicator
+                    typingIndicator.remove();
                     
                     // Display error message
-                    const errorElement = document.createElement('div');
-                    errorElement.className = 'message bot-message';
-                    errorElement.textContent = 'Sorry, I encountered an error. Please try again.';
-                    chatContainer.appendChild(errorElement);
-                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                    addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+                    statusText.textContent = 'Error getting response. Try again.';
                 }
             }
             
@@ -408,29 +505,11 @@
                     .replace(/\b([A-Z][A-Z0-9 ]{2,})\b/g, '<span class="highlight">$1</span>'); // UPPERCASE words
             }
             
-            // Display AI response with highlights
-            function displayAIResponse(text) {
-                const messageElement = document.createElement('div');
-                messageElement.className = 'message bot-message';
-                
-                // Process text to highlight important parts
-                // This is a simple approach - we highlight text between asterisks or in ALL CAPS
-                const highlightedText = text
-                    .replace(/\*([^*]+)\*/g, '<span class="highlight">$1</span>')
-                    .replace(/\b([A-Z]{2,})\b/g, '<span class="highlight">$1</span>');
-                
-                messageElement.innerHTML = highlightedText;
-                chatContainer.appendChild(messageElement);
-                
-                // Scroll to bottom
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-            }
-            
             // Request microphone permission at start
             async function requestMicrophonePermission() {
                 try {
                     await navigator.mediaDevices.getUserMedia({ audio: true });
-                    statusText.textContent = 'Tap the mic to start';
+                    statusText.textContent = 'Tap Start to begin';
                 } catch (error) {
                     console.error('Microphone permission denied:', error);
                     statusText.textContent = 'Microphone access denied';
